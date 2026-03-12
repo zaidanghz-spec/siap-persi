@@ -17,11 +17,18 @@ export default function PatientSurvey() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const sv = getSurvey(token);
-    if (!sv) setError('Link survey tidak valid atau sudah kadaluarsa.');
-    else if (sv.status === 'completed') setError('Survey ini sudah diisi. Terima kasih!');
-    else setSurvey(sv);
-    setLoading(false);
+    async function load() {
+      try {
+        const sv = await getSurvey(token);
+        if (!sv) setError('Link survey tidak valid atau sudah kadaluarsa.');
+        else if (sv.status === 'completed') setError('Survey ini sudah diisi. Terima kasih!');
+        else setSurvey(sv);
+      } catch {
+        setError('Link survey tidak valid atau sudah kadaluarsa.');
+      }
+      setLoading(false);
+    }
+    load();
   }, [token, getSurvey]);
 
   const hospital = useMemo(() => {
@@ -61,7 +68,7 @@ export default function PatientSurvey() {
     setSubmitting(true);
     await new Promise((r) => setTimeout(r, 800));
     const { premScore, promScore, totalPrmScore } = calculateScores();
-    submitSurveyResponse(token, premAnswers, promAnswers, premScore, promScore, totalPrmScore);
+    await submitSurveyResponse(token, premAnswers, promAnswers, premScore, promScore, totalPrmScore);
     setStep(3);
     setSubmitting(false);
   };

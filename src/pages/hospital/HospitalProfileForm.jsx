@@ -126,7 +126,7 @@ export default function HospitalProfileForm() {
 
       {/* Kapasitas */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="glass-card p-6 space-y-4">
-        <h2 className="text-base font-semibold text-white flex items-center gap-2"><Bed className="w-5 h-5 text-gold-500" /> Kapasitas & Sumber Daya</h2>
+        <h2 className="text-base font-semibold text-white flex items-center gap-2"><Bed className="w-5 h-5 text-gold-500" /> Kapasitas & Sumber Daya Manusia</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label className="block text-xs text-ice-400 mb-1.5">Kapasitas Tempat Tidur<span className="text-rose-400 ml-0.5">*</span></label>

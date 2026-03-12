@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAppStore } from '../store/AppStore';
@@ -8,7 +8,7 @@ import FormStepper from '../components/form/FormStepper';
 import StepRSBK from '../components/form/StepRSBK';
 import StepClinicalAudit from '../components/form/StepClinicalAudit';
 import StepPRM from '../components/form/StepPRM';
-import { ArrowLeft, ArrowRight, Send, CheckCircle2, Building2, HeartPulse, Brain, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Send, CheckCircle2, Building2, AlertTriangle, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const pageVariants = {
@@ -24,10 +24,28 @@ function isProfileComplete(hospital) {
   return REQUIRED_PROFILE_FIELDS.every((f) => hospital.profile[f] && String(hospital.profile[f]).trim() !== '');
 }
 
+// Draft persistence via localStorage
+function getDraftKey(hospitalId) { return `siap_draft_${hospitalId}`; }
+
+function saveDraft(hospitalId, data) {
+  try { localStorage.setItem(getDraftKey(hospitalId), JSON.stringify(data)); } catch {}
+}
+
+function loadDraft(hospitalId) {
+  try {
+    const raw = localStorage.getItem(getDraftKey(hospitalId));
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function clearDraft(hospitalId) {
+  try { localStorage.removeItem(getDraftKey(hospitalId)); } catch {}
+}
+
 export default function DataEntryPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { createSubmission, getHospital } = useAppStore();
+  const { createSubmission, getHospital, loading } = useAppStore();
 
   const hospital = getHospital(user?.hospitalId);
   const selectedDepts = hospital?.departments || [];
@@ -35,22 +53,23 @@ export default function DataEntryPage() {
 
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  // Step 1: RSBK
-  const [rsbkQuantities, setRsbkQuantities] = useState({});
+  // Load draft on mount
+  const draft = loadDraft(user?.hospitalId);
+  const [rsbkQuantities, setRsbkQuantities] = useState(draft?.rsbk || {});
+  const [auditValues, setAuditValues] = useState(draft?.audit || {});
+  const [premAnswers, setPremAnswers] = useState(draft?.prem || {});
+  const [promAnswers, setPromAnswers] = useState(draft?.prom || {});
+
   const handleQuantityChange = useCallback((itemId, value) => {
     setRsbkQuantities((prev) => ({ ...prev, [itemId]: value }));
   }, []);
-
-  // Step 2: Audit
-  const [auditValues, setAuditValues] = useState({});
   const handleAuditChange = useCallback((indicatorId, value) => {
     setAuditValues((prev) => ({ ...prev, [indicatorId]: value }));
   }, []);
-
-  // Step 3: PRM
-  const [premAnswers, setPremAnswers] = useState({});
-  const [promAnswers, setPromAnswers] = useState({});
   const handlePremAnswer = useCallback((qId, val) => {
     setPremAnswers((prev) => ({ ...prev, [qId]: val }));
   }, []);
@@ -58,23 +77,39 @@ export default function DataEntryPage() {
     setPromAnswers((prev) => ({ ...prev, [qId]: val }));
   }, []);
 
-  const handleSubmit = () => {
-    const scores = computeAllScores(
-      rsbkQuantities, RSBK_DATA,
-      auditValues, AUDIT_DATA,
-      premAnswers, promAnswers, PRM_DATA,
-      selectedDepts,
-      INITIAL_WEIGHTS
-    );
-    createSubmission({
-      hospitalId: user.hospitalId,
-      rsbkData: rsbkQuantities,
-      auditData: auditValues,
-      prmData: { prem: premAnswers, prom: promAnswers },
-      scores: { rsbk: scores.rsbk, audit: scores.audit, prm: scores.prm },
-    });
-    setSubmitted(true);
+  const handleSaveDraft = () => {
+    setSaving(true);
+    saveDraft(user?.hospitalId, { rsbk: rsbkQuantities, audit: auditValues, prem: premAnswers, prom: promAnswers, step });
+    setTimeout(() => { setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000); }, 300);
   };
+
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    try {
+      const scores = computeAllScores(
+        rsbkQuantities, RSBK_DATA,
+        auditValues, AUDIT_DATA,
+        premAnswers, promAnswers, PRM_DATA,
+        selectedDepts,
+        INITIAL_WEIGHTS
+      );
+      await createSubmission({
+        hospitalId: user.hospitalId,
+        rsbkData: rsbkQuantities,
+        auditData: auditValues,
+        prmData: { prem: premAnswers, prom: promAnswers },
+        scores: { rsbk: scores.rsbk, audit: scores.audit, prm: scores.prm },
+      });
+      clearDraft(user?.hospitalId);
+      setSubmitted(true);
+    } finally { setSubmitting(false); }
+  };
+
+  if (loading) return (
+    <div className="flex items-center justify-center py-20">
+      <div className="w-8 h-8 border-3 border-teal-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   if (submitted) {
     return (
@@ -131,7 +166,6 @@ export default function DataEntryPage() {
         <FormStepper currentStep={step} />
       </div>
 
-      {/* Step content */}
       <AnimatePresence mode="wait">
         <motion.div key={step} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }}>
           {step === 1 && (
@@ -153,17 +187,32 @@ export default function DataEntryPage() {
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-ice-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
           <ArrowLeft className="w-4 h-4" /> Kembali
         </button>
-        {step < 3 ? (
-          <button onClick={() => setStep((s) => s + 1)}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-cobalt-600 to-teal-600 text-white text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer">
-            Selanjutnya <ArrowRight className="w-4 h-4" />
+
+        <div className="flex items-center gap-2">
+          {/* Save Draft */}
+          <button onClick={handleSaveDraft} disabled={saving}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-ice-800/60 border border-white/10 text-ice-300 text-sm font-medium hover:text-white transition-colors cursor-pointer">
+            {saving ? (
+              <div className="w-4 h-4 border-2 border-ice-400 border-t-transparent rounded-full animate-spin" />
+            ) : saved ? (
+              <><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Tersimpan!</>
+            ) : (
+              <><Save className="w-4 h-4" /> Simpan Draft</>
+            )}
           </button>
-        ) : (
-          <button onClick={handleSubmit}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer">
-            <Send className="w-4 h-4" /> Kirim untuk Review
-          </button>
-        )}
+
+          {step < 3 ? (
+            <button onClick={() => setStep((s) => s + 1)}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-cobalt-600 to-teal-600 text-white text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer">
+              Selanjutnya <ArrowRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <button onClick={handleSubmit} disabled={submitting}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer">
+              {submitting ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <><Send className="w-4 h-4" /> Kirim untuk Review</>}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

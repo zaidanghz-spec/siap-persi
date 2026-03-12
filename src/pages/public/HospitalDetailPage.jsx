@@ -51,7 +51,7 @@ export default function HospitalDetailPage() {
   const { scores, totalScore } = ranking;
 
   const scoreCards = [
-    { label: 'RSBK', weight: '15%', value: scores.rsbk, icon: BarChart3, color: 'from-cobalt-500 to-cobalt-600', desc: 'Sumber Daya & Alat Medis' },
+    { label: 'RSBK', weight: '15%', value: scores.rsbk, icon: BarChart3, color: 'from-cobalt-500 to-cobalt-600', desc: 'Sumber Daya Manusia & Alat Medis' },
     { label: 'Audit Klinis', weight: '60%', value: scores.audit, icon: Shield, color: 'from-teal-500 to-teal-600', desc: 'Kepatuhan Protokol Klinis' },
     { label: 'PRM', weight: '25%', value: scores.prm, icon: Users, color: 'from-gold-500 to-gold-600', desc: 'Patient-Reported Measures' },
   ];

@@ -48,13 +48,13 @@ export default function StepPRM({ departments, premAnswers, promAnswers, onPremA
     }
   }, [completed.length]);
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     setFormError('');
     if (!form.patientName.trim()) return setFormError('Nama pasien harus diisi');
     if (!form.rmNumber.trim()) return setFormError('No. RM harus diisi');
     if (!form.department) return setFormError('Pilih departemen');
 
-    const token = createSurveyToken({
+    const token = await createSurveyToken({
       hospitalId: user.hospitalId,
       patientName: form.patientName.trim(),
       rmNumber: form.rmNumber.trim(),

@@ -46,7 +46,7 @@ export default function PublicMethodologyPage() {
               </div>
               <div>
                 <h3 className="text-base font-semibold text-cobalt-900">Modul RSBK — Bobot 15%</h3>
-                <p className="text-[11px] text-ice-500">Sumber Daya, Sarana, dan Alat Medis</p>
+                <p className="text-[11px] text-ice-500">Sumber Daya Manusia, Sarana, dan Alat Medis</p>
               </div>
             </div>
           </div>

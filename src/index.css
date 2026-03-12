@@ -1,0 +1,163 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, sans-serif;
+
+  /* Trust Spectrum Palette */
+  --color-cobalt-50: #eff6ff;
+  --color-cobalt-100: #dbeafe;
+  --color-cobalt-200: #bfdbfe;
+  --color-cobalt-300: #93c5fd;
+  --color-cobalt-400: #60a5fa;
+  --color-cobalt-500: #3b82f6;
+  --color-cobalt-600: #2563eb;
+  --color-cobalt-700: #1d4ed8;
+  --color-cobalt-800: #1e40af;
+  --color-cobalt-900: #1e3a8a;
+  --color-cobalt-950: #172554;
+
+  --color-teal-50: #f0fdfa;
+  --color-teal-100: #ccfbf1;
+  --color-teal-200: #99f6e4;
+  --color-teal-300: #5eead4;
+  --color-teal-400: #2dd4bf;
+  --color-teal-500: #14b8a6;
+  --color-teal-600: #0d9488;
+  --color-teal-700: #0f766e;
+  --color-teal-800: #115e59;
+  --color-teal-900: #134e4a;
+
+  --color-gold-50: #fffbeb;
+  --color-gold-100: #fef3c7;
+  --color-gold-200: #fde68a;
+  --color-gold-300: #fcd34d;
+  --color-gold-400: #fbbf24;
+  --color-gold-500: #f59e0b;
+  --color-gold-600: #d97706;
+  --color-gold-700: #b45309;
+  --color-gold-800: #92400e;
+
+  --color-ice-50: #f8fafc;
+  --color-ice-100: #f1f5f9;
+  --color-ice-200: #e2e8f0;
+  --color-ice-300: #cbd5e1;
+  --color-ice-400: #94a3b8;
+  --color-ice-500: #64748b;
+  --color-ice-600: #475569;
+  --color-ice-700: #334155;
+  --color-ice-800: #1e293b;
+  --color-ice-900: #0f172a;
+  --color-ice-950: #020617;
+
+  --color-rose-400: #fb7185;
+  --color-rose-500: #f43f5e;
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #10b981;
+  --color-emerald-600: #059669;
+  --color-violet-400: #a78bfa;
+  --color-violet-500: #8b5cf6;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+/* ── Glassmorphism ── */
+.glass-card {
+  background: rgba(30, 41, 59, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 16px;
+}
+.glass-card-light {
+  background: rgba(30, 41, 59, 0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  border-radius: 12px;
+}
+/* Light glassmorphism for public pages */
+.glass-card-white {
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(30,58,138,0.08);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(30,58,138,0.06);
+}
+
+/* ── Gradients & Glows ── */
+.gradient-text {
+  background: linear-gradient(135deg, #2563eb, #0d9488);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-gold {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.glow-blue { box-shadow: 0 0 20px rgba(37,99,235,0.15), 0 0 60px rgba(37,99,235,0.05); }
+.glow-teal { box-shadow: 0 0 20px rgba(13,148,136,0.15), 0 0 60px rgba(13,148,136,0.05); }
+.glow-gold { box-shadow: 0 0 20px rgba(217,119,6,0.2), 0 0 60px rgba(217,119,6,0.05); }
+
+/* ── Rank Badges ── */
+.rank-badge-gold { background: linear-gradient(135deg, #fbbf24, #d97706); box-shadow: 0 2px 12px rgba(251,191,36,0.3); }
+.rank-badge-silver { background: linear-gradient(135deg, #94a3b8, #64748b); box-shadow: 0 2px 12px rgba(148,163,184,0.3); }
+.rank-badge-bronze { background: linear-gradient(135deg, #d97706, #92400e); box-shadow: 0 2px 12px rgba(217,119,6,0.3); }
+
+/* ── Animations ── */
+@keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-6px); } }
+@keyframes pulse-teal { 0%, 100% { box-shadow: 0 0 0 0 rgba(13,148,136,0.4); } 70% { box-shadow: 0 0 0 10px rgba(13,148,136,0); } }
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+@keyframes fade-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes confetti-fall { 0% { transform: translateY(-10px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+
+.animate-float { animation: float 4s ease-in-out infinite; }
+.animate-pulse-teal { animation: pulse-teal 2s infinite; }
+.animate-spin-slow { animation: spin-slow 3s linear infinite; }
+.animate-fade-up { animation: fade-up 0.6s ease-out both; }
+
+/* ── Progress Ring ── */
+.progress-ring-circle {
+  transition: stroke-dashoffset 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+/* ── Score bar ── */
+.score-bar-fill { transition: width 1s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+
+/* ── Input focus ── */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37,99,235,0.5);
+}
+
+/* ── Public page base ── */
+.public-page {
+  font-family: var(--font-sans);
+  background: #f8fafc;
+  color: #1e293b;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Portal page base ── */
+.portal-page {
+  font-family: var(--font-sans);
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  color: #e2e8f0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Remove default body styles - controlled per page */
+body {
+  font-family: var(--font-sans);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

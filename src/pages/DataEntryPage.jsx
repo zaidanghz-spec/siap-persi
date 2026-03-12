@@ -8,7 +8,7 @@ import FormStepper from '../components/form/FormStepper';
 import StepRSBK from '../components/form/StepRSBK';
 import StepClinicalAudit from '../components/form/StepClinicalAudit';
 import StepPRM from '../components/form/StepPRM';
-import { ArrowLeft, ArrowRight, Send, CheckCircle2, Building2, HeartPulse, Brain } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Send, CheckCircle2, Building2, HeartPulse, Brain, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const pageVariants = {
@@ -17,6 +17,13 @@ const pageVariants = {
   exit: { opacity: 0, x: -30 },
 };
 
+const REQUIRED_PROFILE_FIELDS = ['namaRS', 'alamat', 'kota', 'provinsi', 'telepon', 'email', 'tipeRS', 'akreditasi', 'namaDirektur', 'emailDirektur'];
+
+function isProfileComplete(hospital) {
+  if (!hospital?.profile) return false;
+  return REQUIRED_PROFILE_FIELDS.every((f) => hospital.profile[f] && String(hospital.profile[f]).trim() !== '');
+}
+
 export default function DataEntryPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -24,6 +31,7 @@ export default function DataEntryPage() {
 
   const hospital = getHospital(user?.hospitalId);
   const selectedDepts = hospital?.departments || [];
+  const profileDone = isProfileComplete(hospital);
 
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
@@ -88,6 +96,24 @@ export default function DataEntryPage() {
             Kirim Data Baru
           </button>
         </div>
+      </motion.div>
+    );
+  }
+
+  if (!profileDone) {
+    return (
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="max-w-lg mx-auto text-center py-20">
+        <div className="w-20 h-20 rounded-full bg-gold-500/15 flex items-center justify-center mx-auto mb-6">
+          <AlertTriangle className="w-10 h-10 text-gold-500" />
+        </div>
+        <h2 className="text-2xl font-bold text-white mb-2">Lengkapi Profil RS Terlebih Dahulu</h2>
+        <p className="text-sm text-ice-400 mb-8">
+          Sebelum mengisi assessment ranking, Anda harus melengkapi data profil rumah sakit.
+        </p>
+        <button onClick={() => navigate('/portal/profile')}
+          className="px-6 py-3 rounded-xl bg-gradient-to-r from-teal-600 to-cobalt-600 text-white font-semibold text-sm hover:opacity-90 transition-opacity cursor-pointer">
+          <Building2 className="w-4 h-4 inline mr-2" /> Isi Profil RS Sekarang
+        </button>
       </motion.div>
     );
   }
